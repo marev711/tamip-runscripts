@@ -126,7 +126,7 @@ done
 
         log "Clean up TMIP folder (remove restarts + rename folder)"
         set -x
-        rm -f $EXP_DIR/TM{jobid}/srf*
+        rm -f $EXP_DIR/TM${jobid}/srf*
         set +x
         mv $EXP_DIR/TM${jobid} $EXP_DIR/TMIP_${running_date}
         
