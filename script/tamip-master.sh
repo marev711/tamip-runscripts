@@ -1,4 +1,4 @@
-#! /bin/sh -eu
+#! /bin/sh -eux
  
 #########################
 # 
@@ -21,6 +21,14 @@ function mail_report()
     cat $body_file | mail -s $1 martin.evaldsson@smhi.se 
 }
 
+function exit_on_error()
+{
+    mail_report $1 $2
+    touch $SCRIPT_DIR/lockfile
+}
+
+trap 'exit_on_error "T-AMIP error" /dev/null' ERR
+
 program=$0
 
 if [[ $0 == */* ]] ; then 
@@ -28,12 +36,11 @@ if [[ $0 == */* ]] ; then
 else 
   export HOME_DIR=`cd .. && echo $PWD`
 fi
-LOG_DIR=$HOME_DIR/log
-OUTPUT_DIR=$HOME_DIR/data
-BIN_DIR=$HOME_DIR/bin
-SCRIPT_DIR=$HOME_DIR/script
+LOG_DIR=$HOME_DIR/log/
+SCRIPT_DIR=$HOME_DIR/script/
 EXP_DIR=/nobackup/rossby15/rossby/joint_exp/tamip/
 logfile=$LOG_DIR/$(date +%Y%m%d%H).log
+run_dir=/nobackup/rossby15/sm_maeva/sources-tamip/runtime/
 
 function usage {
  echo "Usage: ./tamip-master.sh -cf control-file
@@ -58,11 +65,12 @@ echo "This script, $(basename $0), is run by $(whoami) on server $(hostname) fro
 echo "==================================="
 }
 
-if [ ! $# -eq 2 ]; then
+if [ $# -lt 2 ]; then
   echo "Wrong number of arguments" 2>&1
   usage_and_exit
 fi
 
+FIRST_RUN=1
 while (( "$#" )); do 
   case $1 in 
      firstChoice)
@@ -70,6 +78,8 @@ while (( "$#" )); do
      --help|--hel|--he|--h|-help|-hel|-he|-h)
         usage_and_exit
         ;;
+     --first-run)
+        FIRST_RUN=0
       --)
         set --
         ;;
@@ -88,7 +98,12 @@ done
     log "Start at date=$(date)"
     log "====================="
 
-    # check if running (sm_maeva)
+    # Check lockfile
+    if [ -e $SCRIPT_DIR/lockfile ]; then
+        exit 1
+    fi
+
+    # Check if running (sm_maeva)
     set +e
     running_jobs=squeue | grep sm_maeva
     if [ $? -eq 0 ];then
@@ -98,24 +113,42 @@ done
     fi
     set -e
 
-    # read running date file
-    . $SCRIPT_DIR/running_job.txt
+    if [ ! $FIRST_RUN ]; then
+        log "Read running date file"
+        . $SCRIPT_DIR/running_job.txt
 
-    # clean up TMIP folder (remove restarts + rename folder)
-    set -x
-    rm -f $EXP_DIR/TMIP/srf*
-    set +x
-    
-    # check for errors and report
-    cd $EXP_DIR
-    cat ece.info NODE* > tamip_email_report.txt
-    cd -
+        log "Clean up TMIP folder (remove restarts + rename folder)"
+        set -x
+        rm -f $EXP_DIR/TMIP/srf*
+        set +x
+        mv $EXP_DIR/TMIP $EXP_DIR/TM${jobid}
         
-    # delete running date file
-    # delete running date file entry from control-file
-    # copy next entry of control file to running date file
-    # update template run-scripts
-    # launch next run
+        log "Report run report"
+        cd $EXP_DIR
+        cat ece.info NODE* > tamip_email_report.txt
+        cd -
+        mail_report "T-AMIP report" $EXP_DIR/tamip_email_report.txt
+            
+        log "Delete running date file"
+        rm -f $SCRIPT_DIR/running_job.txt
+
+        log "Delete running date file entry from control-file"
+        sed -i "/running_date/d" $control_file
+    fi
+
+    log "Copy next entry of control file to running date file"
+    head -1 $control_file >  $SCRIPT_DIR/running_job.txt
+
+    log "Update run-scripts"
+    set -- $(cat $SCRIPT_DIR/running_job.txt)
+    jobid=$1
+    running_date=$2
+    sed "s/EXPN/TM${jobid}/" run_dir/run-atm-tamip-template.sh > run_dir/run-atm-tamip.sh 
+
+    log "Launch next run"
+    cd $run_dir
+    sbatch -J ECE3-TAMIP_${jobid}_of_57 -N 4 -t 01:00:00  -o 'out/run-atm-tamip.sh.out' -e 'out/run-atm-tamip.sh.err' ./run-atm-tamip.sh
+
     log "End at date=$(date)"
     log "====================="
 } >> $logfile 2>&1
