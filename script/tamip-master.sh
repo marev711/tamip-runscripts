@@ -133,7 +133,7 @@ done
         cd $EXP_DIR/TMIP_${running_date}
         cat ece.info NODE* > $SCRIPT_DIR/tamip_email_report.txt
         cd -
-        mail_report "T-AMIP_report" $SCRIPT_DIR/tamip_email_report.txt
+        mail_report "T-AMIP_report_${running_date}" $SCRIPT_DIR/tamip_email_report.txt
             
         log "Delete running date file"
         rm -f $SCRIPT_DIR/running_job.txt
