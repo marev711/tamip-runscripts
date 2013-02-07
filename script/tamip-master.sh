@@ -80,6 +80,7 @@ while (( "$#" )); do
         ;;
      --first-run)
         FIRST_RUN=0
+        ;;
       --)
         set --
         ;;
