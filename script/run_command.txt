@@ -1,0 +1,1 @@
+while (true);do echo -n "Cleaning: ";cat running_job.txt | awk {print };./tamip-master.sh -cf control-file.txt;echo -n "Currently running: ";cat running_job.txt | awk {print };sleep 11m;if [ $(wc -l control-file.txt | awk {print }) -eq 1 ]; then break;fi;done
