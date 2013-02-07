@@ -132,7 +132,9 @@ done
         
         log "Report run report"
         cd $EXP_DIR/TMIP_${running_date}
-        cat ece.info ifs.stat > $SCRIPT_DIR/tamip_email_report.txt
+        cat ece.info  > $SCRIPT_DIR/tamip_email_report.txt
+        cat "======" >> $SCRIPT_DIR/tamip_email_report.txt
+        cat ifs.stat >> $SCRIPT_DIR/tamip_email_report.txt
         cd -
         mail_report "T-AMIP_report_${running_date}" $SCRIPT_DIR/tamip_email_report.txt
             
