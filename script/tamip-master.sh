@@ -6,7 +6,7 @@
 #
 # Purpose: Control (launch and clean-up) the T-AMIP runs
 #
-# Usage: ./tamip-master.sh <control-file>
+# Usage: ./tamip-master.sh -cf <control-file> [--first-run]
 #
 # Revision history: 2013-02-06  --  Script created, Martin Evaldsson, Rossby Centre
 #
@@ -44,7 +44,7 @@ logfile=$LOG_DIR/$(date +%Y%m%d%H%M).log
 run_dir=/nobackup/rossby15/sm_maeva/sources-tamip/runtime/
 
 function usage {
- echo "Usage: ./tamip-master.sh -cf control-file
+echo "Usage: ./tamip-master.sh -cf control-file [--first-run]
  Where <control-file> describes the runs to do. 'tamip-master.sh' is
  supposed to be run from crontab." 1>&2 
 }
@@ -157,8 +157,8 @@ done
 
     log "Launch next run"
     cd $run_dir
-    curr_job=$((58-jobid))
-    sbatch -J ECE3-TAMIP_${curr_job}_of_57 -N 4 -t 01:00:00  -o 'out/run-atm-tamip.sh.out' -e 'out/run-atm-tamip.sh.err' ./run-atm-tamip.sh
+    curr_job=$((17-jobid))
+    sbatch -J ECE3-TAMIP_${curr_job}_of_15 -N 4 -t 01:00:00  -o 'out/run-atm-tamip.sh.out' -e 'out/run-atm-tamip.sh.err' ./run-atm-tamip.sh
 
     log "End at date=$(date)"
     log "====================="
