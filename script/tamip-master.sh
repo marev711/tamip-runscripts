@@ -1,4 +1,4 @@
-#! /bin/sh -eu
+#! /bin/sh -eux
  
 #########################
 # 
@@ -157,9 +157,9 @@ done
 
     log "Launch next run"
     cd $run_dir
-    curr_job=$((17-10#jobid))
+    curr_job=$((17-10#$jobid))
     sbatch -J ECE3-TAMIP_${curr_job}_of_15 -N 4 -t 01:00:00  -o 'out/run-atm-tamip.sh.out' -e 'out/run-atm-tamip.sh.err' ./run-atm-tamip.sh
 
     log "End at date=$(date)"
     log "====================="
-} >> $logfile 2>&1
+} #>> $logfile 2>&1
