@@ -74,8 +74,6 @@ fi
 FIRST_RUN=1
 while (( "$#" )); do 
   case $1 in 
-     firstChoice)
-        ;;
      --help|--hel|--he|--h|-help|-hel|-he|-h)
         usage_and_exit
         ;;
