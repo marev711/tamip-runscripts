@@ -41,7 +41,7 @@ LOG_DIR=$HOME_DIR/log/
 SCRIPT_DIR=$HOME_DIR/script/
 EXP_DIR=/nobackup/rossby15/rossby/joint_exp/tamip/
 logfile=$LOG_DIR/$(date +%Y%m%d%H%M).log
-run_dir=/nobackup/rossby15/sm_maeva/sources-tamip/runtime/
+run_dir=/nobackup/rossby15/sm_maeva/ece-sources/sources-tamip/runtime/
 
 function usage {
 echo "Usage: ./tamip-master.sh -cf control-file [--first-run]
@@ -155,8 +155,9 @@ done
 
     log "Launch next run"
     cd $run_dir
-    curr_job=$((17-10#$jobid))
-    sbatch -J ECE3-TAMIP_${curr_job}_of_15 -N 4 -t 01:00:00  -o 'out/run-atm-tamip.sh.out' -e 'out/run-atm-tamip.sh.err' ./run-atm-tamip.sh
+    curr_job=$((10#$jobid))
+    rm -rf $EXP_DIR/TMIP_${running_date}/*
+    sbatch -J ECE3-TAMIP_${curr_job}_of_64 -N 4 -t 01:00:00  -o 'out/run-atm-tamip.sh.out' -e 'out/run-atm-tamip.sh.err' ./run-atm-tamip.sh
 
     log "End at date=$(date)"
     log "====================="
